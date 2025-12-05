@@ -1,31 +1,46 @@
 :root {
-  --background: 240 10% 3.9%;
-  --foreground: 0 0% 98%;
-  
-  --card: 240 10% 3.9%;
-  --card-foreground: 0 0% 98%;
-  
-  --popover: 240 10% 3.9%;
-  --popover-foreground: 0 0% 98%;
-  
-  --primary: 263.4 70% 50.4%;
-  --primary-foreground: 210 40% 98%;
-  
-  --secondary: 240 3.7% 15.9%;
-  --secondary-foreground: 0 0% 98%;
-  
-  --muted: 240 3.7% 15.9%;
-  --muted-foreground: 240 5% 64.9%;
-  
-  --accent: 240 3.7% 15.9%;
-  --accent-foreground: 0 0% 98%;
-  
-  --destructive: 0 62.8% 30.6%;
-  --destructive-foreground: 0 0% 98%;
-  
-  --border: 240 3.7% 15.9%;
-  --input: 240 3.7% 15.9%;
-  --ring: 240 4.9% 83.9%;
+  /* Default (Professional/Blue) */
+  --theme-bg: 220 30% 96%;
+  --theme-card-bg: 0 0% 100%;
+  --theme-text: 222 47% 11%;
+  --theme-primary: 221 83% 53%;
+  /* Blue */
+
+  /* Base Variables Mapping */
+  --background: var(--theme-bg);
+  --card: var(--theme-card-bg);
+  --foreground: var(--theme-text);
+  --primary: var(--theme-primary);
+}
+
+.theme-professional {
+  --theme-bg: 220 30% 96%;
+  --theme-card-bg: 0 0% 100%;
+  --theme-text: 222 47% 11%;
+  --theme-primary: 221 83% 53%;
+}
+
+.theme-light {
+  --theme-bg: 0 0% 98%;
+  --theme-card-bg: 0 0% 100%;
+  --theme-text: 0 0% 20%;
+  --theme-primary: 150 50% 40%;
+  /* Greenish/Teal or just neutral */
+}
+
+.theme-dark {
+  --theme-bg: 222 47% 11%;
+  --theme-card-bg: 217 33% 17%;
+  --theme-text: 210 40% 98%;
+  --theme-primary: 263.4 70% 50.4%;
+  /* Purple */
+}
+
+/* Glass card overrides for themes */
+.glass-card {
+  background: hsl(var(--card) / 0.8);
+  /* Use theme card color with opacity */
+  color: hsl(var(--foreground));
 }
 
 * {
@@ -83,7 +98,9 @@ h2 {
 }
 
 /* Form Elements */
-input, select, textarea {
+input,
+select,
+textarea {
   width: 100%;
   padding: 12px 16px;
   margin: 8px 0;
@@ -97,7 +114,9 @@ input, select, textarea {
   transition: border-color 0.2s;
 }
 
-input:focus, select:focus, textarea:focus {
+input:focus,
+select:focus,
+textarea:focus {
   outline: none;
   border-color: hsl(var(--primary));
   box-shadow: 0 0 0 2px hsl(var(--ring));

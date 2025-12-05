@@ -1,66 +1,70 @@
-import Image from "next/image";
-import styles from "./page.module.css";
+'use client';
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 
 export default function Home() {
+  const [token, setToken] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const router = useRouter();
+
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setError('');
+
+    try {
+      const res = await fetch('http://127.0.0.1:8000/api/auth/verify/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token }),
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+        localStorage.setItem('token', token);
+        localStorage.setItem('role', data.role);
+        if (data.role === 'observer') {
+          router.push('/observer');
+        } else {
+          router.push('/dashboard');
+        }
+      } else {
+        setError(data.error || 'Accesso fallito');
+      }
+    } catch (err) {
+      setError('Errore di connessione');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
-    <div className={styles.page}>
-      <main className={styles.main}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className={styles.intro}>
-          <h1>To get started, edit the page.js file.</h1>
-          <p>
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+    <main className="container" style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <div className="glass-card" style={{ maxWidth: '400px', width: '100%', textAlign: 'center' }}>
+        <h1>Benvenuto</h1>
+        <p style={{ marginBottom: '2rem', color: 'hsl(var(--muted-foreground))' }}>Per accedere al questionario, inserisci il tuo token di invito.</p>
+
+        <form onSubmit={handleLogin}>
+          <input
+            type="text"
+            placeholder="Inserisci il tuo token (UUID)"
+            value={token}
+            onChange={(e) => setToken(e.target.value)}
+            required
+          />
+          {error && <p style={{ color: 'hsl(var(--destructive))', marginTop: '0.5rem' }}>{error}</p>}
+          <button type="submit" style={{ width: '100%', marginTop: '1rem' }} disabled={loading}>
+            {loading ? 'Verifica in corso...' : 'Entra'}
+          </button>
+        </form>
+
+        <div style={{ marginTop: '2rem', borderTop: '1px solid hsl(var(--border))', paddingTop: '1rem' }}>
+          <p style={{ fontSize: '0.8rem', color: 'hsl(var(--muted-foreground))' }}>Development Helper:</p>
+          <a href="http://127.0.0.1:8000/admin" target="_blank" style={{ color: 'hsl(var(--primary))', textDecoration: 'none' }}>Go to Django Admin</a>
         </div>
-        <div className={styles.ctas}>
-          <a
-            className={styles.primary}
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className={styles.logo}
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className={styles.secondary}
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
+      </div>
+    </main>
   );
 }
