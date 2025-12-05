@@ -21,11 +21,34 @@
 }
 
 .theme-light {
-  --theme-bg: 0 0% 98%;
+  --theme-bg: 0 0% 90%;
+  /* Darker grey to contrast with white cards */
   --theme-card-bg: 0 0% 100%;
-  --theme-text: 0 0% 20%;
-  --theme-primary: 150 50% 40%;
-  /* Greenish/Teal or just neutral */
+  --theme-text: 0 0% 0%;
+  /* Pure black text */
+  --theme-primary: 0 0% 20%;
+  /* Dark grey primary */
+  --secondary: 0 0% 95%;
+  /* Light grey for inputs */
+  --muted-foreground: 0 0% 40%;
+  --border: 0 0% 80%;
+}
+
+/* Light Theme Specific Overrides */
+.theme-light .glass-card {
+  background: rgba(255, 255, 255, 0.8);
+  /* Less transparent, more solid white */
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  color: black;
+}
+
+.theme-light input,
+.theme-light select,
+.theme-light textarea {
+  background: white;
+  border: 1px solid #ccc;
+  color: black;
 }
 
 .theme-dark {

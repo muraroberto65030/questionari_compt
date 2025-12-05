@@ -35,7 +35,12 @@ export default function Dashboard() {
     return (
         <div className="container">
             <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
-                <h1>I Miei Questionari</h1>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                    <h1>I Miei Questionari</h1>
+                    <Link href="/create">
+                        <button style={{ fontSize: '0.9rem', padding: '0.5rem 1rem' }}>+ Crea Nuovo</button>
+                    </Link>
+                </div>
                 <button className="secondary" onClick={() => {
                     localStorage.clear();
                     router.push('/');
