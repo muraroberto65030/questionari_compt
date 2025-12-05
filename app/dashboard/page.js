@@ -17,7 +17,8 @@ export default function Dashboard() {
 
         // Fetch surveys
         // For MVP, we fetch all and let backend helper filter or just show all for now
-        fetch('http://127.0.0.1:8000/api/surveys/', {
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000';
+        fetch(`${apiUrl}/api/surveys/`, {
             headers: {
                 'Authorization': `Bearer ${token}` // If we implemented auth header
             }

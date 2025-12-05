@@ -12,7 +12,8 @@ export default function SurveyPage({ params }) {
     const router = useRouter();
 
     useEffect(() => {
-        fetch(`http://127.0.0.1:8000/api/surveys/${id}/`)
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000';
+        fetch(`${apiUrl}/api/surveys/${id}/`)
             .then(res => res.json())
             .then(data => {
                 setSurvey(data);
@@ -66,7 +67,8 @@ export default function SurveyPage({ params }) {
             answer_choice: answers[qId].answer_choice || []
         }));
 
-        const res = await fetch(`http://127.0.0.1:8000/api/surveys/${id}/submit/`, {
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000';
+        const res = await fetch(`${apiUrl}/api/surveys/${id}/submit/`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ token, answers: payload })

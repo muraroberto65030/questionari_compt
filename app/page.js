@@ -14,7 +14,8 @@ export default function Home() {
     setError('');
 
     try {
-      const res = await fetch('http://127.0.0.1:8000/api/auth/verify/', {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000';
+      const res = await fetch(`${apiUrl}/api/auth/verify/`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ token }),
@@ -62,7 +63,7 @@ export default function Home() {
 
         <div style={{ marginTop: '2rem', borderTop: '1px solid hsl(var(--border))', paddingTop: '1rem' }}>
           <p style={{ fontSize: '0.8rem', color: 'hsl(var(--muted-foreground))' }}>Development Helper:</p>
-          <a href="http://127.0.0.1:8000/admin" target="_blank" style={{ color: 'hsl(var(--primary))', textDecoration: 'none' }}>Go to Django Admin</a>
+          <a href={`${process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000'}/admin`} target="_blank" style={{ color: 'hsl(var(--primary))', textDecoration: 'none' }}>Go to Django Admin</a>
         </div>
       </div>
     </main>

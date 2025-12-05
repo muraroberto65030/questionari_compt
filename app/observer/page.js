@@ -112,7 +112,8 @@ export default function ObserverPage() {
 
     useEffect(() => {
         const token = localStorage.getItem('token');
-        fetch('http://127.0.0.1:8000/api/surveys/', {
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000';
+        fetch(`${apiUrl}/api/surveys/`, {
             headers: { 'Authorization': `Bearer ${token}` }
         })
             .then(res => res.json())
@@ -123,7 +124,8 @@ export default function ObserverPage() {
     }, []);
 
     const viewResults = async (id) => {
-        const res = await fetch(`http://127.0.0.1:8000/api/surveys/${id}/results/`);
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000';
+        const res = await fetch(`${apiUrl}/api/surveys/${id}/results/`);
         const data = await res.json();
         setResults(data);
         setSelectedSurvey(id);
