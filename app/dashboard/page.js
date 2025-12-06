@@ -8,8 +8,13 @@ export default function Dashboard() {
     const [loading, setLoading] = useState(true);
     const router = useRouter();
 
+    const [role, setRole] = useState(null);
+
     useEffect(() => {
         const token = localStorage.getItem('token');
+        const userRole = localStorage.getItem('role');
+        setRole(userRole);
+
         if (!token) {
             router.push('/');
             return;
@@ -38,12 +43,15 @@ export default function Dashboard() {
             <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
                     <h1>I Miei Questionari</h1>
-                    <Link href="/create">
-                        <button style={{ fontSize: '0.9rem', padding: '0.5rem 1rem' }}>+ Crea Nuovo</button>
-                    </Link>
+                    {role === 'creator' && (
+                        <Link href="/create">
+                            <button style={{ fontSize: '0.9rem', padding: '0.5rem 1rem' }}>+ Crea Nuovo</button>
+                        </Link>
+                    )}
                 </div>
                 <button className="secondary" onClick={() => {
-                    localStorage.clear();
+                    localStorage.removeItem('token');
+                    localStorage.removeItem('role');
                     router.push('/');
                 }}>Esci</button>
             </header>
