@@ -35,7 +35,7 @@ export default function Home() {
         setError(data.error || 'Accesso fallito');
       }
     } catch (err) {
-      setError('Errore di connessione');
+      setError('Errore di connessione: ' + err.message);
     } finally {
       setLoading(false);
     }
