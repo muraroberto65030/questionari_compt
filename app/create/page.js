@@ -1,14 +1,50 @@
 'use client';
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useEffect } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 
 export default function CreateSurveyPage() {
     const router = useRouter();
+    const searchParams = useSearchParams();
+    const editId = searchParams.get('id');
+
     const [title, setTitle] = useState('');
     const [description, setDescription] = useState('');
     const [theme, setTheme] = useState('professional');
     const [isAnonymous, setIsAnonymous] = useState(false);
+    const [isActive, setIsActive] = useState(true);
     const [questions, setQuestions] = useState([]);
+    const [loading, setLoading] = useState(true); // Start true to check editId
+
+    useEffect(() => {
+        if (!editId) {
+            setLoading(false);
+            return;
+        }
+
+        const token = localStorage.getItem('token');
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000';
+        fetch(`${apiUrl}/api/surveys/${editId}/?token=${token}`)
+            .then(res => {
+                if (!res.ok) throw new Error("Errore nel caricamento del questionario");
+                return res.json();
+            })
+            .then(data => {
+                setTitle(data.title);
+                setDescription(data.description);
+                setTheme(data.theme);
+                setIsAnonymous(data.is_anonymous);
+                setIsActive(data.is_active !== undefined ? data.is_active : true);
+                setQuestions(data.questions.map(q => ({
+                    ...q,
+                    tempChoice: ''
+                })));
+                setLoading(false);
+            })
+            .catch(err => {
+                alert(err.message);
+                router.push('/dashboard');
+            });
+    }, [editId, router]);
 
     // Helper to add a new question
     const addQuestion = () => {
@@ -80,11 +116,12 @@ export default function CreateSurveyPage() {
 
         // Prepare payload (remove UI-only fields)
         const payloadQuestions = questions.map(q => ({
+            id: q.id, // Include ID for updates
             text: q.text,
             question_type: q.question_type,
             is_required: q.is_required,
             choices: q.choices,
-            order: 0 // Optional, handled by backend usually or could be index
+            order: 0
         }));
 
         const payload = {
@@ -92,33 +129,44 @@ export default function CreateSurveyPage() {
             description,
             theme,
             is_anonymous: isAnonymous,
+            is_active: isActive,
             questions: payloadQuestions
         };
 
         const token = localStorage.getItem('token');
+        if (!token) {
+            alert("Errore: Non sei autenticato.");
+            return;
+        }
+
+        const finalPayload = { ...payload, token };
         const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000';
 
-        const res = await fetch(`${apiUrl}/api/surveys/`, {
-            method: 'POST',
+        const method = editId ? 'PUT' : 'POST';
+        const url = editId ? `${apiUrl}/api/surveys/${editId}/` : `${apiUrl}/api/surveys/`;
+
+        const res = await fetch(url, {
+            method: method,
             headers: {
                 'Content-Type': 'application/json',
-                // 'Authorization': `Bearer ${token}` 
             },
-            body: JSON.stringify(payload)
+            body: JSON.stringify(finalPayload)
         });
 
         if (res.ok) {
-            alert('Questionario creato con successo!');
+            alert(editId ? 'Questionario aggiornato!' : 'Questionario creato con successo!');
             router.push('/dashboard');
         } else {
             const err = await res.json();
-            alert('Errore creazione: ' + JSON.stringify(err));
+            alert('Errore salvataggio: ' + JSON.stringify(err));
         }
     };
 
+    if (loading) return <div className="container">Caricamento...</div>;
+
     return (
         <div className="container" style={{ maxWidth: '800px', margin: '0 auto' }}>
-            <h1>Crea Nuovo Questionario</h1>
+            <h1>{editId ? 'Modifica Questionario' : 'Crea Nuovo Questionario'}</h1>
 
             <form onSubmit={handleSubmit} className="glass-card" style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
 
@@ -151,7 +199,7 @@ export default function CreateSurveyPage() {
                     <select
                         value={theme}
                         onChange={e => setTheme(e.target.value)}
-                        style={{ width: '100%', padding: '0.8rem', borderRadius: '8px', border: '1px solid hsl(var(--border))', background: 'rgba(255,255,255,0.05)', color: 'white' }}
+                        style={{ width: '100%', padding: '0.8rem', borderRadius: '8px', border: '1px solid hsl(var(--border))', background: 'rgba(255,255,255,0.05)', color: 'inherit' }}
                     >
                         <option value="professional" style={{ color: 'black' }}>Professional (Blu)</option>
                         <option value="light" style={{ color: 'black' }}>Light (Chiaro)</option>
@@ -159,18 +207,34 @@ export default function CreateSurveyPage() {
                     </select>
                 </div>
 
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem', padding: '0.5rem', background: 'rgba(255,255,255,0.05)', borderRadius: '8px' }}>
-                    <input
-                        type="checkbox"
-                        id="anon"
-                        checked={isAnonymous}
-                        onChange={e => setIsAnonymous(e.target.checked)}
-                        style={{ width: '1.2rem', height: '1.2rem' }}
-                    />
-                    <label htmlFor="anon" style={{ cursor: 'pointer', fontSize: '1rem' }}>
-                        <strong>Questionario Anonimo</strong>
-                        <span style={{ display: 'block', fontSize: '0.8rem', opacity: 0.7, fontWeight: 400 }}>Le email dei partecipanti non verranno mostrate nei risultati.</span>
-                    </label>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '2rem' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem', padding: '0.5rem', background: 'rgba(255,255,255,0.05)', borderRadius: '8px' }}>
+                        <input
+                            type="checkbox"
+                            id="anon"
+                            checked={isAnonymous}
+                            onChange={e => setIsAnonymous(e.target.checked)}
+                            style={{ width: '1.2rem', height: '1.2rem' }}
+                        />
+                        <label htmlFor="anon" style={{ cursor: 'pointer', fontSize: '1rem' }}>
+                            <strong>Questionario Anonimo</strong>
+                            <span style={{ display: 'block', fontSize: '0.8rem', opacity: 0.7, fontWeight: 400 }}>Nascondi email partecipanti.</span>
+                        </label>
+                    </div>
+
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem', padding: '0.5rem', background: 'rgba(255,255,255,0.05)', borderRadius: '8px' }}>
+                        <input
+                            type="checkbox"
+                            id="active"
+                            checked={isActive}
+                            onChange={e => setIsActive(e.target.checked)}
+                            style={{ width: '1.2rem', height: '1.2rem' }}
+                        />
+                        <label htmlFor="active" style={{ cursor: 'pointer', fontSize: '1rem' }}>
+                            <strong>Visibile agli utenti</strong>
+                            <span style={{ display: 'block', fontSize: '0.8rem', opacity: 0.7, fontWeight: 400 }}>Se disattivato, nessuno potrà compilarlo.</span>
+                        </label>
+                    </div>
                 </div>
 
                 <hr style={{ borderColor: 'hsl(var(--border))', opacity: 0.3 }} />
@@ -273,7 +337,7 @@ export default function CreateSurveyPage() {
                 </div>
 
                 <button type="submit" style={{ marginTop: '1rem', padding: '1rem', fontSize: '1.1rem', fontWeight: 'bold' }}>
-                    Crea Questionario
+                    {editId ? 'Salva Modifiche' : 'Crea Questionario'}
                 </button>
 
             </form>

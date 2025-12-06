@@ -1,93 +1,85 @@
-'use client';
-import { useEffect, useState, use } from 'react';
-import { useRouter } from 'next/navigation';
+const [answers, setAnswers] = useState({});
+const [loading, setLoading] = useState(true);
+const router = useRouter();
 
-export default function SurveyPage({ params }) {
-    // Use `use` to unwrap params
-    const { id } = use(params);
+useEffect(() => {
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000';
+    fetch(`${apiUrl}/api/surveys/${id}/`)
+        .then(res => res.json())
+        .then(data => {
+            setSurvey(data);
+            setLoading(false);
+        });
+}, [id]);
 
-    const [survey, setSurvey] = useState(null);
-    const [answers, setAnswers] = useState({});
-    const [loading, setLoading] = useState(true);
-    const router = useRouter();
-
-    useEffect(() => {
-        const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000';
-        fetch(`${apiUrl}/api/surveys/${id}/`)
-            .then(res => res.json())
-            .then(data => {
-                setSurvey(data);
-                setLoading(false);
-            });
-    }, [id]);
-
-    const handleInputChange = (questionId, value, type) => {
-        setAnswers(prev => {
-            if (type === 'multi') {
-                // value is the choice string
-                const current = prev[questionId]?.answer_choice || [];
-                if (current.includes(value)) {
-                    return { ...prev, [questionId]: { ...prev[questionId], answer_choice: current.filter(c => c !== value) } };
-                } else {
-                    return { ...prev, [questionId]: { ...prev[questionId], answer_choice: [...current, value] } };
-                }
-            } else if (type === 'single') {
-                return { ...prev, [questionId]: { ...prev[questionId], answer_choice: [value] } };
+const handleInputChange = (questionId, value, type) => {
+    setAnswers(prev => {
+        if (type === 'multi') {
+            // value is the choice string
+            const current = prev[questionId]?.answer_choice || [];
+            if (current.includes(value)) {
+                return { ...prev, [questionId]: { ...prev[questionId], answer_choice: current.filter(c => c !== value) } };
             } else {
-                return { ...prev, [questionId]: { ...prev[questionId], answer_text: value } };
+                return { ...prev, [questionId]: { ...prev[questionId], answer_choice: [...current, value] } };
             }
-        });
-    };
-
-    const handleSubmit = async () => {
-        const token = localStorage.getItem('token');
-        if (!token) return;
-
-        // Validation
-        const unresponded = survey.questions.filter(q => {
-            if (!q.is_required) return false;
-            const ans = answers[q.id];
-            if (!ans) return true;
-
-            if (q.question_type === 'text') {
-                return !ans.answer_text || ans.answer_text.trim() === '';
-            } else {
-                return !ans.answer_choice || ans.answer_choice.length === 0;
-            }
-        });
-
-        if (unresponded.length > 0) {
-            alert(`Per favore rispondi alle seguenti domande obbligatorie: ${unresponded.map(q => q.order).join(', ')}`);
-            return;
+        } else if (type === 'single') {
+            return { ...prev, [questionId]: { ...prev[questionId], answer_choice: [value] } };
+        } else {
+            return { ...prev, [questionId]: { ...prev[questionId], answer_text: value } };
         }
+    });
+};
 
-        const payload = Object.keys(answers).map(qId => ({
-            question_id: qId,
-            answer_text: answers[qId].answer_text || '',
-            answer_choice: answers[qId].answer_choice || []
-        }));
+const handleSubmit = async () => {
+    const token = localStorage.getItem('token');
+    if (!token) return;
 
-        const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000';
-        const res = await fetch(`${apiUrl}/api/surveys/${id}/submit/`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ token, answers: payload })
-        });
+    // Validation
+    const unresponded = survey.questions.filter(q => {
+        if (!q.is_required) return false;
+        const ans = answers[q.id];
+        if (!ans) return true;
 
-        if (!res.ok) {
-            const data = await res.json();
-            alert('Errore invio: ' + (data.error || 'Errore sconosciuto'));
-            return;
+        if (q.question_type === 'text') {
+            return !ans.answer_text || ans.answer_text.trim() === '';
+        } else {
+            return !ans.answer_choice || ans.answer_choice.length === 0;
         }
+    });
 
-        alert('Grazie! Risposta inviata.');
-        router.push('/dashboard');
-    };
+    if (unresponded.length > 0) {
+        alert(`Per favore rispondi alle seguenti domande obbligatorie: ${unresponded.map(q => q.order).join(', ')}`);
+        return;
+    }
 
-    if (loading || !survey) return <div className="container">Caricamento in corso...</div>;
+    const payload = Object.keys(answers).map(qId => ({
+        question_id: qId,
+        answer_text: answers[qId].answer_text || '',
+        answer_choice: answers[qId].answer_choice || []
+    }));
 
-    return (
-        <div className={`container theme-${survey.theme || 'professional'}`} style={{ maxWidth: '800px' }}>
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000';
+    const res = await fetch(`${apiUrl}/api/surveys/${id}/submit/`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token, answers: payload })
+    });
+
+    if (!res.ok) {
+        const data = await res.json();
+        alert('Errore invio: ' + (data.error || 'Errore sconosciuto'));
+        return;
+    }
+
+    alert('Grazie! Risposta inviata.');
+    router.push('/dashboard');
+};
+
+if (loading || !survey) return <div className="container">Caricamento in corso...</div>;
+
+return (
+    <div className={`theme-${survey.theme || 'professional'}`} style={{ minHeight: '100vh', backgroundColor: 'hsl(var(--background))', color: 'hsl(var(--foreground))', display: 'flex', justifyContent: 'center', paddingTop: '2rem' }}>
+        <div className="container" style={{ maxWidth: '800px', margin: '0' }}>
             <div className="glass-card">
                 <h1>{survey.title}</h1>
                 <p style={{ marginBottom: '2rem' }}>{survey.description}</p>
@@ -143,5 +135,6 @@ export default function SurveyPage({ params }) {
                 <button onClick={handleSubmit} style={{ marginTop: '2rem', width: '100%' }}>Invia Risposte</button>
             </div>
         </div>
-    );
+    </div>
+);
 }
