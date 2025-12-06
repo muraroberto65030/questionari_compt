@@ -172,7 +172,13 @@ export default function ObserverPage() {
 
     return (
         <div className="container">
-            <h1>Dashboard Osservatore</h1>
+            <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+                <h1>Dashboard Osservatore</h1>
+                <button className="secondary" onClick={() => {
+                    localStorage.removeItem('token');
+                    router.push('/');
+                }}>Esci</button>
+            </header>
 
             <div className="grid">
                 <div className="glass-card">

@@ -7,6 +7,7 @@ export default function CreateSurveyPage() {
     const [title, setTitle] = useState('');
     const [description, setDescription] = useState('');
     const [theme, setTheme] = useState('professional');
+    const [isAnonymous, setIsAnonymous] = useState(false);
     const [questions, setQuestions] = useState([]);
 
     // Helper to add a new question
@@ -90,6 +91,7 @@ export default function CreateSurveyPage() {
             title,
             description,
             theme,
+            is_anonymous: isAnonymous,
             questions: payloadQuestions
         };
 
@@ -155,6 +157,20 @@ export default function CreateSurveyPage() {
                         <option value="light" style={{ color: 'black' }}>Light (Chiaro)</option>
                         <option value="dark" style={{ color: 'black' }}>Dark (Scuro)</option>
                     </select>
+                </div>
+
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem', padding: '0.5rem', background: 'rgba(255,255,255,0.05)', borderRadius: '8px' }}>
+                    <input
+                        type="checkbox"
+                        id="anon"
+                        checked={isAnonymous}
+                        onChange={e => setIsAnonymous(e.target.checked)}
+                        style={{ width: '1.2rem', height: '1.2rem' }}
+                    />
+                    <label htmlFor="anon" style={{ cursor: 'pointer', fontSize: '1rem' }}>
+                        <strong>Questionario Anonimo</strong>
+                        <span style={{ display: 'block', fontSize: '0.8rem', opacity: 0.7, fontWeight: 400 }}>Le email dei partecipanti non verranno mostrate nei risultati.</span>
+                    </label>
                 </div>
 
                 <hr style={{ borderColor: 'hsl(var(--border))', opacity: 0.3 }} />
