@@ -1,9 +1,9 @@
 'use client';
 // Force rebuild
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useParams, useSearchParams } from 'next/navigation';
 
-export default function SurveyPage() {
+function SurveyContent() {
     const { id } = useParams();
     const searchParams = useSearchParams();
     const urlToken = searchParams.get('token');
@@ -162,5 +162,13 @@ export default function SurveyPage() {
                 </div>
             </div>
         </div>
+    );
+}
+
+export default function SurveyPage() {
+    return (
+        <Suspense fallback={<div className="container">Caricamento in corso...</div>}>
+            <SurveyContent />
+        </Suspense>
     );
 }

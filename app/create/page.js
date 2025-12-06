@@ -1,8 +1,8 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 
-export default function CreateSurveyPage() {
+function CreateSurveyContent() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const editId = searchParams.get('id');
@@ -102,6 +102,9 @@ export default function CreateSurveyPage() {
                 break;
             case 'truefalse':
                 choices = ['Vero', 'Falso'];
+                break;
+            case 'likert5':
+                choices = ['1 (Molto in disaccordo)', '2', '3', '4', '5 (Molto d\'accordo)'];
                 break;
             case 'likert5':
                 choices = ['1 (Molto in disaccordo)', '2', '3', '4', '5 (Molto d\'accordo)'];
@@ -342,5 +345,13 @@ export default function CreateSurveyPage() {
 
             </form>
         </div>
+    );
+}
+
+export default function CreateSurveyPage() {
+    return (
+        <Suspense fallback={<div className="container">Caricamento...</div>}>
+            <CreateSurveyContent />
+        </Suspense>
     );
 }
